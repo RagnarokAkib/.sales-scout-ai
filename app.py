@@ -40,6 +40,7 @@ target_input = st.text_input("Enter Company Name or Prospect Details:", placehol
 specific_goal = st.text_input("Specific Search Criteria? (Optional):", placeholder="e.g., What are their latest products?")
 
 # Helper tool to create the PDF download file
+# Helper tool to create the PDF download file safely without emoji crashes
 def create_pdf_bytes(report_text, entity_name):
     pdf = FPDF()
     pdf.add_page()
@@ -48,9 +49,15 @@ def create_pdf_bytes(report_text, entity_name):
     pdf.cell(200, 10, txt=f"Sales Report: {entity_name}", ln=True, align='C')
     pdf.ln(10)
     pdf.set_font("Helvetica", size=11)
+    
+    # Remove markdown headers and replace bullet points
     clean_text = report_text.replace("##", "").replace("###", "").replace("*", "-")
+    
+    # Encode to safely drop any hidden emojis or special icons that crash Helvetica
     for line in clean_text.split('\n'):
-        pdf.multi_cell(0, 7, txt=line)
+        clean_line = line.encode('latin-1', 'ignore').decode('latin-1')
+        pdf.multi_cell(0, 7, txt=clean_line)
+        
     return pdf.output()
 
 # 3. RUN ENGINE BUTTON
