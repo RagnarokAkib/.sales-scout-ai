@@ -4,17 +4,17 @@ import json
 import urllib.parse
 from urllib.request import urlopen
 
-# Wide-view corporate dashboard layout
+# Robust visual dashboard setup
 st.set_page_config(page_title="Sales Scout AI Pro", page_icon="💼", layout="wide")
 
 st.title("💼 Sales Scout AI Pro")
-st.write("Multi-Channel Digital Intelligence Dashboard")
+st.write("Enterprise Digital Intelligence Dashboard")
 
-# HARDCODED SECURE SEARCH ACCESS
+# FIXED ENGINE KEYS
 GOOGLE_API_KEY = "AIzaSyBqL7AJECi7lnkPQERmf2708JkAD1iwgE4"
-GOOGLE_CX_ID = "b6e6328bc4e844b82"  # Global public web search node orientation
+GOOGLE_CX_ID = "b6e6328bc4e844b82" 
 
-# Sidebar for AI Key verification & Toggles
+# Clean sidebar for inputs
 with st.sidebar:
     st.header("🔑 Connection Center")
     ai_api_key = st.text_input("Gemini API Key:", type="password")
@@ -28,15 +28,12 @@ with st.sidebar:
 
 # 2. TARGET ENTRY
 st.subheader("🔍 Target Profile Initiation")
-card_input, goal_input = st.columns([2, 1])
-with card_input:
-    target_input = st.text_input("Target Company Name or Persona (e.g., Ningbo Bonny E-Home):")
-with goal_input:
-    specific_goal = st.text_input("Custom Target Query Parameter (Optional):", placeholder="e.g., contact info, owners")
+target_input = st.text_input("Target Company Name or Persona (e.g., Ningbo Bonny E-Home):")
+specific_goal = st.text_input("Custom Target Query Parameter (Optional):", placeholder="e.g., contact info, owners")
 
 st.divider()
 
-# Official Google Search Data Handshake
+# Official Google Search API Lookup
 def google_search_lookup(query, api_key, cx_id):
     try:
         safe_query = urllib.parse.quote(query)
@@ -51,21 +48,21 @@ def google_search_lookup(query, api_key, cx_id):
     except:
         return ""
 
-# 3. RUN PIPELINE
+# 3. RUN ANALYSIS PIPELINE
 if st.button("🚀 Execute Comprehensive Multi-Channel Scan", use_container_width=True):
     if not ai_api_key:
         st.error("⚠️ Setup Incomplete: Please provide your Gemini API Key in the left sidebar menu.")
     elif not target_input:
         st.warning("⚠️ Action Required: Enter a company or prospect target to scan.")
     else:
-        with st.spinner(f"Querying live global indexing nodes for '{target_input}'..."):
+        with st.spinner(f"Syncing live global data indexes for '{target_input}'..."):
             try:
-                # Gather live data blocks using your new key!
+                # Gather live data blocks using your verified Google API Key
                 general_search = google_search_lookup(f"{target_input} {specific_goal}", GOOGLE_API_KEY, GOOGLE_CX_ID)
                 li_search = google_search_lookup(f"site:linkedin.com/in/ OR site:linkedin.com/company/ {target_input}", GOOGLE_API_KEY, GOOGLE_CX_ID) if scan_linkedin else ""
                 fb_search = google_search_lookup(f"site:facebook.com/ {target_input}", GOOGLE_API_KEY, GOOGLE_CX_ID) if scan_facebook else ""
 
-                # Initialize the Gemini Engine Node
+                # Fire up the Gemini Model
                 genai.configure(api_key=ai_api_key)
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 
@@ -100,41 +97,40 @@ if st.button("🚀 Execute Comprehensive Multi-Channel Scan", use_container_widt
                 raw_payload = response.text.strip().replace("```json", "").replace("```", "")
                 dataset = json.loads(raw_payload)
                 
-                st.balloons() # Success animation!
+                st.balloons()
                 
-                # --- VISUAL DASHBOARD BLOCKS ---
-                col_m1, col_m2, col_m3 = st.columns([2, 1, 1])
-                with col_m1:
-                    st.info(f"🏢 **Verified Target Entity:**\n### {dataset.get('official_name', target_input)}")
-                with col_m2:
-                    st.warning(f"📍 **Primary Location:**\n### {dataset.get('market_hub', 'Global Scope')}")
-                with col_m3:
-                    score = dataset.get("data_confidence", 95)
-                    st.metric(label="🎯 Data Record Strength", value=f"{score}%")
-                    st.progress(score / 100)
+                # --- RESPONSIVE MOBILE-FRIENDLY LAYOUT DISPLAY ---
+                st.info(f"🏢 **Verified Target:** {dataset.get('official_name', target_input)} | 📍 **Location:** {dataset.get('market_hub', 'Global Horizon')} | 🎯 **Data Strength:** {dataset.get('data_confidence', 95)}%")
                 
-                st.write("###")
                 with st.container(border=True):
                     st.markdown("📋 **Operational Blueprint & Market Profile:**")
                     st.write(dataset.get("summary", ""))
                 
-                st.write("###")
-                left_col, right_col = st.columns([1, 2])
-                with left_col:
-                    st.markdown("### 📦 Key Offerings Portfolio")
-                    for item in dataset.get('offerings', []):
-                        st.markdown(f"🔹 **{item}**")
-                    st.write("###")
-                    st.markdown("### 📡 Public Social Signal Audit")
-                    st.caption(dataset.get('social_audit', ''))
-                    
-                with right_col:
-                    st.markdown("### 🎯 Cross-Channel Pitch Strategies")
-                    st.info(f"🔗 **LinkedIn Outreach Angle: {dataset.get('pitch_1_title')}**\n\n{dataset.get('pitch_1_body')}")
-                    st.warning(f"👥 **Facebook Marketing Play: {dataset.get('pitch_2_title')}**\n\n{dataset.get('pitch_2_body')}")
-                    st.error(f"🎯 **Targeted Solution Pitch: {dataset.get('pitch_3_title')}**\n\n{dataset.get('pitch_3_body')}")
+                st.divider()
+                
+                # Display core offerings list smoothly
+                st.markdown("### 📦 Key Offerings Portfolio")
+                for item in dataset.get('offerings', []):
+                    st.markdown(f"🔹 **{item}**")
+                
+                st.divider()
+                
+                st.markdown("### 📡 Public Social Signal Audit")
+                st.info(dataset.get('social_audit', 'No tracking footprints established.'))
+                
+                st.divider()
+                
+                st.markdown("### 🎯 Cross-Channel Pitch Strategies")
+                st.markdown(f"#### 🔗 {dataset.get('pitch_1_title')}")
+                st.write(dataset.get('pitch_1_body'))
+                
+                st.markdown(f"#### 👥 {dataset.get('pitch_2_title')}")
+                st.write(dataset.get('pitch_2_body'))
+                
+                st.markdown(f"#### 🎯 {dataset.get('pitch_3_title')}")
+                st.write(dataset.get('pitch_3_body'))
                     
             except Exception as e:
-                st.error("⚠️ Visual formatting reset. Displaying text dossier report:")
+                st.error("⚠️ Data structural sync reset. Showing raw analytical summary text:")
                 if 'response' in locals():
-                    st.markdown(response.text)
+                    st.write(response.text)
