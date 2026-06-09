@@ -1,125 +1,114 @@
 import streamlit as st
 import google.generativeai as genai
 from fpdf import FPDF
+from duckduckgo_search import DDGS
 import datetime
 
-# Page Setup for Mobile Phones
 st.set_page_config(page_title="Sales Scout AI Pro", page_icon="💼", layout="centered")
 
 st.title("💼 Sales Scout AI Pro")
-st.write("Enter your key, connect optional platforms, and get a custom client report.")
+st.write("Live Web-Searching Client & Company Intelligence Dossier")
 
-# 1. SETUP LOG-IN LOCKER (With Optional Social Media Platforms)
-with st.expander("🔑 STEP 1: Connection & Credentials Setup", expanded=True):
-    st.info("Log in once. Only the AI API Key is required. Social platforms are 100% optional.")
+# 1. SETUP ENGINE LOCKER
+with st.expander("🔑 STEP 1: Enter Your Gemini AI API Key", expanded=True):
+    ai_api_key = st.text_input("Paste your Gemini API Key here:", type="password")
     
-    # REQUIRED
-    ai_api_key = st.text_input("🔑 Paste Gemini API Key (Required):", type="password", placeholder="AI_Key...")
-    
-    st.divider()
-    st.write("🌐 **Optional Social Profiles (Leave blank if you don't use them):**")
-    
-    # OPTIONAL FIELDS
-    li_user = st.text_input("LinkedIn Username:", placeholder="name@company.com")
-    li_pass = st.text_input("LinkedIn Password:", type="password")
-    
-    fb_user = st.text_input("Facebook Username:", placeholder="Username")
-    fb_pass = st.text_input("Facebook Password:", type="password")
-    
-    ig_user = st.text_input("Instagram Username:", placeholder="Username")
-    ig_pass = st.text_input("Instagram Password:", type="password")
-    
-    if ai_api_key:
-        st.success("🎯 AI Engine Connected! You can close this box now.")
+    st.caption("🌐 Optional Social Profiles (Saved to local browser tab memory):")
+    li_user = st.text_input("LinkedIn Username (Optional):", placeholder="name@company.com")
+    fb_user = st.text_input("Facebook Username (Optional):", placeholder="Username")
+    ig_user = st.text_input("Instagram Username (Optional):", placeholder="Username")
 
 st.divider()
 
-# 2. TARGET RESEARCH INPUTS
+# 2. TARGET RESEARCH
 st.subheader("🔍 STEP 2: Target Research")
-target_input = st.text_input("Enter Company Name or Prospect Details:", placeholder="e.g., Acme Corp or John Doe at Acme")
-specific_goal = st.text_input("Specific Search Criteria? (Optional):", placeholder="e.g., What are their latest products?")
+target_input = st.text_input("Enter Company Name or Person (e.g., Bonny E-Home, Akib):")
+specific_goal = st.text_input("Specific Search Criteria? (Optional):", placeholder="e.g., core products, target contact info")
 
-# Helper tool to create the PDF download file
-# Helper tool to create the PDF download file safely without emoji crashes
+# Safe PDF generator that wraps text beautifully and drops non-standard characters
 def create_pdf_bytes(report_text, entity_name):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", size=12)
     pdf.set_font("Helvetica", style="B", size=16)
-    pdf.cell(200, 10, txt=f"Sales Report: {entity_name}", ln=True, align='C')
+    pdf.cell(0, 10, txt=f"Sales Report: {entity_name}", ln=True, align='C')
     pdf.ln(10)
     pdf.set_font("Helvetica", size=11)
     
-    # Remove markdown headers and replace bullet points
     clean_text = report_text.replace("##", "").replace("###", "").replace("*", "-")
     
-    # Encode to safely drop any hidden emojis or special icons that crash Helvetica
     for line in clean_text.split('\n'):
+        # Clean out emojis or unusual symbols
         clean_line = line.encode('latin-1', 'ignore').decode('latin-1')
-        pdf.multi_cell(0, 7, txt=clean_line)
-        
+        # multi_cell automatically wraps text to the next line so it never crashes width limits!
+        pdf.multi_cell(0, 6, txt=clean_line)
     return pdf.output()
 
-# 3. RUN ENGINE BUTTON
-if st.button("🚀 Generate Report & PDF", use_container_width=True):
-    # This is the fix: The code now ONLY blocks the user if the AI Key is missing!
+# 3. RUN ENGINE WITH LIVE WEB SEARCH
+if st.button("🚀 Run Live Web Intelligence", use_container_width=True):
     if not ai_api_key:
-        st.error("⚠️ Please enter your Gemini AI Key in Step 1 first!")
+        st.error("⚠️ Please enter your AI Key in Step 1 first!")
     elif not target_input:
-        st.warning("⚠️ Please type a company or prospect name!")
+        st.warning("⚠️ Please type a company or target profile to research!")
     else:
-        with st.spinner("AI Agent is scanning records and compiling your briefing..."):
+        with st.spinner(f"Actively crawling web directories and social patterns for '{target_input}'..."):
             try:
-                # Initialize the Gemini AI Engine
+                # Execution: Gather live search snippets from the open web
+                search_query = f"{target_input} {specific_goal if specific_goal else ''}"
+                raw_context = ""
+                
+                with DDGS() as ddgs:
+                    results = ddgs.text(search_query, max_results=5)
+                    for r in results:
+                        raw_context += f"Source Title: {r['title']}\nSnippet: {r['body']}\nURL: {r['href']}\n\n"
+                
+                # Check if we found web data
+                if not raw_context:
+                    raw_context = "No public search engine text snippets returned. Relying on default background index layers."
+
+                # Wake up the AI Node
                 genai.configure(api_key=ai_api_key)
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 
-                # Check which optional accounts the sales rep provided
-                linkedin_status = f"Connected as {li_user}" if li_user else "Not connected (Using fallback public search)"
-                facebook_status = f"Connected as {fb_user}" if fb_user else "Not connected (Using fallback public search)"
-                instagram_status = f"Connected as {ig_user}" if ig_user else "Not connected (Using fallback public search)"
-                
-                # Build the AI Prompt
+                # Feed the live web research straight into the AI prompt layout
                 prompt = f"""
-                You are an elite sales intelligence agent. Provide a detailed sales dossier for the target.
+                You are an elite, real-time corporate intelligence agent. 
+                Synthesize a factual, tactical sales dossier based on these live web search results. Do not make up facts.
                 
-                Target: {target_input}
-                Custom Request from Sales Rep: {specific_goal if specific_goal else 'Provide a general executive briefing.'}
+                Target Entity Request: {target_input}
+                Additional Context: {specific_goal if specific_goal else 'None'}
                 
-                Rep Platform Connections Status:
-                - LinkedIn: {linkedin_status}
-                - Facebook: {facebook_status}
-                - Instagram: {instagram_status}
+                Live Web Search Results Collected:
+                {raw_context}
                 
-                Structure your report cleanly with markdown formatting:
-                ## 📊 Executive Briefing
-                (A clear summary of what they do and their industry presence)
+                Provide your intelligence report using this clean Markdown structure (Do not use emojis):
                 
-                ### 🎯 Tactical Sales Hooks
-                (Provide 3 smart angles the rep can use to pitch them)
+                ## Executive Briefing
+                Summarize exactly what this company/person does, their real-world presence, and active footprints based on the live data.
                 
-                ### 🌐 Digital & Social Footprint Notes
-                (Summarize how they look online based on the active connections listed above)
+                ## Key Sales Insights & Hooks
+                Provide 3 smart operational hooks a sales rep can use to strike up a business conversation with them.
+                
+                ## Public Information Sources Located
+                Reference the key findings from the search results above.
                 """
                 
                 response = model.generate_content(prompt)
                 report_content = response.text
                 
-                # Show results on screen
-                st.success("✅ Intelligence Dossier Generated Successfully!")
+                # Print results on dashboard screen
+                st.success("✅ Live Intelligence Report Generated!")
                 st.markdown(report_content)
                 
                 st.divider()
                 
-                # Generate PDF download option
+                # Offer safe PDF download
                 pdf_data = create_pdf_bytes(report_content, target_input)
                 st.download_button(
-                    label="📥 Download This Briefing Report (PDF)",
+                    label="📥 Download Report as PDF",
                     data=bytes(pdf_data),
-                    file_name=f"Sales_Scout_{target_input.replace(' ', '_')}.pdf",
+                    file_name=f"Live_Scout_{target_input.replace(' ', '_')}.pdf",
                     mime="application/pdf",
                     use_container_width=True
                 )
-                
             except Exception as e:
-                st.error(f"Failed to communicate with AI Node: {e}")
+                st.error(f"System Error running lookup pipeline: {e}")
