@@ -65,7 +65,7 @@ if st.button("🚀 Generate Report & PDF", use_container_width=True):
             try:
                 # Initialize the Gemini AI Engine
                 genai.configure(api_key=ai_api_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-2.5-flash')
                 
                 # Check which optional accounts the sales rep provided
                 linkedin_status = f"Connected as {li_user}" if li_user else "Not connected (Using fallback public search)"
