@@ -101,7 +101,7 @@ if st.button("🚀 Generate & Compile Dossier", use_container_width=True):
             try:
                 # Set up the LLM config
                 genai.configure(api_key=ai_api_key)
-                model = genai.GenerativeModel('gemini-pro')
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 
                 # Dynamic Prompt Injection
                 prompt = f"""
