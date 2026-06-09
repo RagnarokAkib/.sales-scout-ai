@@ -1,2 +1,3 @@
 fpdf2
 google-generativeai
+duckduckgo_search
