@@ -4,91 +4,95 @@ import json
 import urllib.parse
 from urllib.request import urlopen
 
-# Wide-view dashboard configuration
+# Wide-view corporate dashboard layout
 st.set_page_config(page_title="Sales Scout AI Pro", page_icon="💼", layout="wide")
 
 st.title("💼 Sales Scout AI Pro")
-st.write("Multi-Channel Digital Intelligence Dashboard (No Social Logins Required)")
+st.write("Multi-Channel Digital Intelligence Dashboard")
 
-# 1. SIDEBAR CONFIGURATION (Cleaned up - no risky passwords!)
+# HARDCODED SECURE SEARCH ACCESS
+GOOGLE_API_KEY = "AIzaSyBqL7AJECi7lnkPQERmf2708JkAD1iwgE4"
+GOOGLE_CX_ID = "b6e6328bc4e844b82"  # Global public web search node orientation
+
+# Sidebar for AI Key verification & Toggles
 with st.sidebar:
-    st.header("🔑 Engine Credentials")
-    ai_api_key = st.sidebar.text_input("Gemini API Key:", type="password")
+    st.header("🔑 Connection Center")
+    ai_api_key = st.text_input("Gemini API Key:", type="password")
     st.divider()
     st.markdown("### 📡 Deep Scan Radar")
-    st.caption("Enable automatic OSINT sweeps on public directory channels:")
-    scan_linkedin = st.checkbox("Sweep Public LinkedIn Indexes", value=True)
-    scan_facebook = st.checkbox("Sweep Public Facebook Logs", value=True)
-    scan_instagram = st.checkbox("Sweep Public Instagram Handles", value=True)
+    scan_linkedin = st.checkbox("Include Public LinkedIn Footprints", value=True)
+    scan_facebook = st.checkbox("Include Public Facebook Footprints", value=True)
+    
+    if ai_api_key:
+        st.success("🤖 Core AI Engine Ready")
 
 # 2. TARGET ENTRY
 st.subheader("🔍 Target Profile Initiation")
 card_input, goal_input = st.columns([2, 1])
 with card_input:
-    target_input = st.text_input("Target Company Name or Persona:", placeholder="e.g., Ningbo Bonny E-Home")
+    target_input = st.text_input("Target Company Name or Persona (e.g., Ningbo Bonny E-Home):")
 with goal_input:
-    specific_goal = st.text_input("Custom Parameter (Optional):", placeholder="e.g., core products, target audience")
+    specific_goal = st.text_input("Custom Target Query Parameter (Optional):", placeholder="e.g., contact info, owners")
 
 st.divider()
 
-# Helper tool to scrape public search snippets without accounts
-def fetch_public_social_snippets(target, site_domain):
+# Official Google Search Data Handshake
+def google_search_lookup(query, api_key, cx_id):
     try:
-        query = urllib.parse.quote(f"site:{site_domain} {target}")
-        url = f"https://html.duckduckgo.com/html/?q={query}"
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
-        with urlopen(req, timeout=4) as response:
-            html = response.read().decode('utf-8')
-            # Extracts simple text chunks out of the html container
-            import re
-            snippets = re.findall(r'<td class="result-snippet">(.*?)</td>', html)
-            return " | ".join(snippets[:3]).replace('<b>', '').replace('</b>', '')
+        safe_query = urllib.parse.quote(query)
+        url = f"https://www.googleapis.com/customsearch/v1?q={safe_query}&key={api_key}&cx={cx_id}&num=3"
+        with urlopen(url, timeout=5) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            results = data.get("items", [])
+            snippet_text = ""
+            for item in results:
+                snippet_text += f"Title: {item['title']}\nSnippet: {item['snippet']}\n\n"
+            return snippet_text if snippet_text else ""
     except:
-        return "No unauthenticated public layout blocks returned directly."
+        return ""
 
-# 3. ANALYSIS PIPELINE RUNNER
+# 3. RUN PIPELINE
 if st.button("🚀 Execute Comprehensive Multi-Channel Scan", use_container_width=True):
     if not ai_api_key:
         st.error("⚠️ Setup Incomplete: Please provide your Gemini API Key in the left sidebar menu.")
     elif not target_input:
         st.warning("⚠️ Action Required: Enter a company or prospect target to scan.")
     else:
-        with st.spinner(f"Deploying free web scanners across active public registries for '{target_input}'..."):
+        with st.spinner(f"Querying live global indexing nodes for '{target_input}'..."):
             try:
-                # Run the free, account-free social channel checks via search indexes
-                li_data = fetch_public_social_snippets(target_input, "linkedin.com/in/") if scan_linkedin else "Skipped"
-                fb_data = fetch_public_social_snippets(target_input, "facebook.com/") if scan_facebook else "Skipped"
-                ig_data = fetch_public_social_snippets(target_input, "instagram.com/") if scan_instagram else "Skipped"
-                
-                # Wake up Gemini 
+                # Gather live data blocks using your new key!
+                general_search = google_search_lookup(f"{target_input} {specific_goal}", GOOGLE_API_KEY, GOOGLE_CX_ID)
+                li_search = google_search_lookup(f"site:linkedin.com/in/ OR site:linkedin.com/company/ {target_input}", GOOGLE_API_KEY, GOOGLE_CX_ID) if scan_linkedin else ""
+                fb_search = google_search_lookup(f"site:facebook.com/ {target_input}", GOOGLE_API_KEY, GOOGLE_CX_ID) if scan_facebook else ""
+
+                # Initialize the Gemini Engine Node
                 genai.configure(api_key=ai_api_key)
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 
-                # Bundle the gathered public social data and send it directly to the model
                 prompt = f"""
-                You are an elite multi-channel sales intelligence agent. 
-                Synthesize a factual, tactical corporate dossier for: {target_input}.
-                Custom parameter: {specific_goal if specific_goal else 'None'}
+                You are an elite corporate intelligence agent. 
+                Synthesize a factual, highly professional sales dossier based on these official live Google results. 
                 
-                Raw Open-Web Social Network Snippets Discovered:
-                - LinkedIn Indexing: {li_data}
-                - Facebook Indexing: {fb_data}
-                - Instagram Indexing: {ig_data}
+                Target Request: {target_input}
                 
-                You must return ONLY a pure JSON dataset matching the key-value attributes below. No backticks, no prose text.
+                Live Google Search Verified Data: {general_search}
+                LinkedIn Index Records: {li_search}
+                Facebook Index Records: {fb_search}
+                
+                You must return ONLY a pure JSON dataset matching the key-value attributes below. Do not use markdown blocks or backticks.
                 {{
-                    "official_name": "Full validated name of company or individual",
-                    "market_hub": "Primary city/country location",
-                    "data_confidence": 95,
-                    "summary": "1-2 sentence high-level business profile summary",
-                    "offerings": ["Core Offering 1", "Core Offering 2", "Core Offering 3"],
-                    "pitch_1_title": "Pitch 1 Header",
-                    "pitch_1_body": "Detailed sales strategy text using LinkedIn context if available",
-                    "pitch_2_title": "Pitch 2 Header",
-                    "pitch_2_body": "Detailed sales strategy text using Facebook context if available",
-                    "pitch_3_title": "Pitch 3 Header",
-                    "pitch_3_body": "Detailed sales strategy text using Instagram context if available",
-                    "social_audit": "A summary critique of how active their brand footprints appear across the searched indexes"
+                    "official_name": "Full validated name of company or individual found in search data",
+                    "market_hub": "Primary city/country corporate headquarters",
+                    "data_confidence": 98,
+                    "summary": "1-2 sentence corporate operations summary based on search details",
+                    "offerings": ["Product/Service Line 1", "Product/Service Line 2", "Product/Service Line 3"],
+                    "pitch_1_title": "LinkedIn-Tailored Outreach Header",
+                    "pitch_1_body": "Operational pitch tactic leveraging their LinkedIn presence or professional records",
+                    "pitch_2_title": "Facebook/B2C Outreach Header",
+                    "pitch_2_body": "Pitch tactic leveraging their marketing, client interactions, or public community presence",
+                    "pitch_3_title": "Executive Summary Value Play",
+                    "pitch_3_body": "A custom pitch matching the exact criteria requested by the user",
+                    "social_audit": "A professional analysis of how strong their verified public social footprints look."
                 }}
                 """
                 
@@ -96,44 +100,41 @@ if st.button("🚀 Execute Comprehensive Multi-Channel Scan", use_container_widt
                 raw_payload = response.text.strip().replace("```json", "").replace("```", "")
                 dataset = json.loads(raw_payload)
                 
-                st.balloons() # Success animation
+                st.balloons() # Success animation!
                 
-                # --- VISUAL DASHBOARD GRID ARRANGEMENT ---
+                # --- VISUAL DASHBOARD BLOCKS ---
                 col_m1, col_m2, col_m3 = st.columns([2, 1, 1])
                 with col_m1:
                     st.info(f"🏢 **Verified Target Entity:**\n### {dataset.get('official_name', target_input)}")
                 with col_m2:
-                    st.warning(f"📍 **Primary Location:**\n### {dataset.get('market_hub', 'Global Horizon')}")
+                    st.warning(f"📍 **Primary Location:**\n### {dataset.get('market_hub', 'Global Scope')}")
                 with col_m3:
-                    score = dataset.get("data_confidence", 90)
+                    score = dataset.get("data_confidence", 95)
                     st.metric(label="🎯 Data Record Strength", value=f"{score}%")
                     st.progress(score / 100)
                 
                 st.write("###")
-                
                 with st.container(border=True):
                     st.markdown("📋 **Operational Blueprint & Market Profile:**")
                     st.write(dataset.get("summary", ""))
                 
                 st.write("###")
-                
                 left_col, right_col = st.columns([1, 2])
                 with left_col:
                     st.markdown("### 📦 Key Offerings Portfolio")
-                    for item in dataset.get("offerings", []):
+                    for item in dataset.get('offerings', []):
                         st.markdown(f"🔹 **{item}**")
-                    
                     st.write("###")
                     st.markdown("### 📡 Public Social Signal Audit")
-                    st.caption(dataset.get("social_audit", ""))
+                    st.caption(dataset.get('social_audit', ''))
                     
                 with right_col:
                     st.markdown("### 🎯 Cross-Channel Pitch Strategies")
-                    st.info(f"🔗 **LinkedIn Angle: {dataset.get('pitch_1_title')}**\n\n{dataset.get('pitch_1_body')}")
-                    st.warning(f"👥 **Facebook Angle: {dataset.get('pitch_2_title')}**\n\n{dataset.get('pitch_2_body')}")
-                    st.error(f"📸 **Instagram Angle: {dataset.get('pitch_3_title')}**\n\n{dataset.get('pitch_3_body')}")
+                    st.info(f"🔗 **LinkedIn Outreach Angle: {dataset.get('pitch_1_title')}**\n\n{dataset.get('pitch_1_body')}")
+                    st.warning(f"👥 **Facebook Marketing Play: {dataset.get('pitch_2_title')}**\n\n{dataset.get('pitch_2_body')}")
+                    st.error(f"🎯 **Targeted Solution Pitch: {dataset.get('pitch_3_title')}**\n\n{dataset.get('pitch_3_body')}")
                     
             except Exception as e:
-                st.error("⚠️ Free indexing rate limits or parsing formats caused a dashboard frame stall. Retrying raw format...")
+                st.error("⚠️ Visual formatting reset. Displaying text dossier report:")
                 if 'response' in locals():
                     st.markdown(response.text)
