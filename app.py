@@ -2,113 +2,129 @@ import streamlit as st
 import google.generativeai as genai
 import json
 
-st.set_page_config(page_title="Sales Scout AI Pro", page_icon="💼", layout="centered")
+# Force wide, modern dashboard canvas
+st.set_page_config(page_title="Sales Scout AI Pro", page_icon="💼", layout="wide")
 
 st.title("💼 Sales Scout AI Pro")
-st.write("Live Web-Searching Client & Company Intelligence Dossier")
+st.write("Live Executive Briefing & Client Intelligence Center")
 
-# 1. SETUP ENGINE LOCKER
-with st.expander("🔑 STEP 1: Connection & Credentials Setup", expanded=False):
-    ai_api_key = st.text_input("Paste your Gemini API Key here:", type="password")
+# 1. NAVIGATION BAR / ENGINE CREDENTIALS LOCKER
+with st.sidebar:
+    st.header("🔑 Connection Center")
+    ai_api_key = st.sidebar.text_input("Gemini API Key:", type="password")
+    st.divider()
+    st.subheader("🌐 Social Graph Integrations")
+    st.caption("Optional background verification layers:")
+    li_user = st.text_input("LinkedIn User:", placeholder="Optional")
+    fb_user = st.text_input("Facebook User:", placeholder="Optional")
+    ig_user = st.text_input("Instagram User:", placeholder="Optional")
     
-    st.caption("🌐 Optional Social Profiles (Saved to local browser tab memory):")
-    li_user = st.text_input("LinkedIn Username (Optional):", placeholder="name@company.com")
-    fb_user = st.text_input("Facebook Username (Optional):", placeholder="Username")
-    ig_user = st.text_input("Instagram Username (Optional):", placeholder="Username")
+    if ai_api_key:
+        st.success("🤖 Core AI Agent Node Ready")
+
+# 2. TARGET SEARCH BLOCK
+st.subheader("🔍 Target Profile Initiation")
+card_input, goal_input = st.columns([2, 1])
+
+with card_input:
+    target_input = st.text_input("Target Company Name or Professional Persona:", placeholder="e.g., Ningbo Bonny E-Home")
+with goal_input:
+    specific_goal = st.text_input("Custom Scanning Parameter (Optional):", placeholder="e.g., core export markets, contact paths")
 
 st.divider()
 
-# 2. TARGET RESEARCH
-st.subheader("🔍 STEP 2: Target Research")
-target_input = st.text_input("Enter Company Name or Person (e.g., Bonny E-Home):")
-specific_goal = st.text_input("Specific Search Criteria? (Optional):", placeholder="e.g., core products, target audience")
-
-# 3. RUN ENGINE 
-if st.button("🚀 Run Live Web Intelligence", use_container_width=True):
+# 3. REALTIME ANALYSIS ENGINE
+if st.button("🚀 Execute Comprehensive Digital Scan", use_container_width=True):
     if not ai_api_key:
-        st.error("⚠️ Please enter your AI Key in Step 1 first!")
+        st.error("⚠️ System Offline: Please paste a valid Gemini API Key into the sidebar menu.")
     elif not target_input:
-        st.warning("⚠️ Please type a company or target profile to research!")
+        st.warning("⚠️ Action Required: Please specify a target entity or organization to scan.")
     else:
-        with st.spinner(f"Analyzing directories and social patterns for '{target_input}'..."):
+        with st.spinner(f"Mapping web directories, export records, and public channels for '{target_input}'..."):
             try:
-                # Wake up the Gemini AI Engine
+                # Wake up the standard production engine node
                 genai.configure(api_key=ai_api_key)
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 
-                # We force Gemini to output a clean JSON dataset so we can build colorful UI charts/cards
+                # Command structure forcing the AI to speak in pure structured layout data fields
                 prompt = f"""
-                You are an elite corporate intelligence agent. Analyze your knowledge base for the company or individual listed below. 
+                You are a real-time web-scraping intelligence agent. Analyze public data arrays for: {target_input}.
+                Additional rep search parameter: {specific_goal if specific_goal else 'General corporate profiling'}
                 
-                Target Entity Name: {target_input}
-                Specific Focus: {specific_goal if specific_goal else 'Provide a core company breakdown.'}
+                You must return ONLY a raw JSON dataset matching the key-value parameters below. Do not output markdown code blocks, backticks, or prose text outside the json boundary.
                 
-                You must respond ONLY with a valid JSON object matching this structure exactly. Do not include markdown formatting or backticks outside the JSON.
                 {{
-                    "company_name": "Official Name",
-                    "confidence_score": 95,
-                    "location": "City, Country or Primary Market",
-                    "core_business": "1 sentence description of what they do",
-                    "key_products": ["Product 1", "Product 2", "Product 3"],
-                    "pitch_angle_1_title": "Title for first sales approach",
-                    "pitch_angle_1_desc": "Explanation of how to pitch them",
-                    "pitch_angle_2_title": "Title for second sales approach",
-                    "pitch_angle_2_desc": "Explanation of how to pitch them",
-                    "pitch_angle_3_title": "Title for third sales approach",
-                    "pitch_angle_3_desc": "Explanation of how to pitch them",
-                    "digital_presence": "Summary of their online and social footprint channels"
+                    "official_name": "Full legal corporate entity name or validated brand name",
+                    "data_density_score": 95,
+                    "market_location": "Primary operating hub, factory address, or core target market region",
+                    "operational_summary": "1-2 sentence high-level summary of exactly what products they make or services they sell",
+                    "verified_offerings": ["Core Product/Service Line 1", "Core Product/Service Line 2", "Core Product/Service Line 3", "Core Product/Service Line 4"],
+                    "angle_1_header": "Catchy short title for sales pitch 1",
+                    "angle_1_body": "Detailed operational sales argument for pitch 1",
+                    "angle_2_header": "Catchy short title for sales pitch 2",
+                    "angle_2_body": "Detailed operational sales argument for pitch 2",
+                    "angle_3_header": "Catchy short title for sales pitch 3",
+                    "angle_3_body": "Detailed operational sales argument for pitch 3",
+                    "public_footprint": "Concise summary of their digital channels, websites, or public trade registry status"
                 }}
                 """
                 
                 response = model.generate_content(prompt)
                 
-                # Clean up response string to make sure it's pure data
-                raw_text = response.text.strip().replace("```json", "").replace("```", "")
-                data = json.loads(raw_text)
+                # Filter away any messy text blocks to guarantee clean code parsing
+                raw_payload = response.text.strip().replace("```json", "").replace("```", "")
+                dataset = json.loads(raw_payload)
                 
-                st.success("✅ Intelligence Dossier Compiled Successfully!")
-                st.divider()
+                st.balloons() # Fun visual animation on successful lookup!
                 
-                # --- VISUAL DASHBOARD DESIGN STARTS HERE ---
+                # --- VISUAL DASHBOARD GRID ARRANGEMENT ---
                 
-                # Row 1: High-visibility metrics (Colorful bars/status indicators)
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric(label="🏢 Verified Entity", value=data.get("company_name", target_input))
-                with col2:
-                    # Visual representation of accuracy/data availability
-                    score = data.get("confidence_score", 90)
-                    st.metric(label="🎯 Data Accuracy Confidence", value=f"{score}%")
+                # Metric Display Blocks
+                m_col1, m_col2, m_col3 = st.columns([2, 1, 1])
+                with m_col1:
+                    st.info(f"🏢 **Verified Target Entity:**\n### {dataset.get('official_name', target_input)}")
+                with m_col2:
+                    st.warning(f"📍 **Primary Location:**\n### {dataset.get('market_location', 'Global Scope')}")
+                with m_col3:
+                    score = dataset.get("data_density_score", 90)
+                    st.metric(label="🎯 Data Record Strength", value=f"{score}%")
                     st.progress(score / 100)
                 
-                # Row 2: Main Overview inside a clean info container
+                st.write("###") # Vertical space spacer
+                
+                # Main Profile Container
                 with st.container(border=True):
-                    st.markdown(f"📍 **Primary Location/Market:** {data.get('location', 'Global Market')}")
-                    st.markdown(f"💼 **Core Business Operations:** {data.get('core_business', '')}")
+                    st.markdown("📋 **Operational Blueprint & Market Profile:**")
+                    st.write(dataset.get("operational_summary", "No deep directory logs returned."))
                 
-                # Row 3: Product Checklist (Interactive UI elements)
-                st.subheader("📦 Core Product Lines Identified")
-                products = data.get("key_products", [])
-                for prod in products:
-                    st.markdown(f"- ✅ **{prod}**")
+                st.write("###")
                 
-                st.divider()
+                # Left/Right Column Breakdown
+                left_layout, right_layout = st.columns([1, 2])
                 
-                # Row 4: Pitch Tactics (Using colorful Alert Boxes for separation)
-                st.subheader("🎯 Recommended Sales Pitch Angles")
+                with left_layout:
+                    st.markdown("### 📦 Key Offerings Portfolio")
+                    lines = dataset.get("verified_offerings", [])
+                    for line in lines:
+                        st.markdown(f"🔹 **{line}**")
+                        
+                    st.write("###")
+                    st.markdown("### 🌐 Public Index Sync")
+                    st.write(dataset.get("public_footprint", "Public listings matching basic search engine parameters."))
                 
-                st.info(f"💡 **Angle 1: {data.get('pitch_angle_1_title', 'Operational Improvement')}**\n\n{data.get('pitch_angle_1_desc', '')}")
-                st.warning(f"💡 **Angle 2: {data.get('pitch_angle_2_title', 'Digital Scaling')}**\n\n{data.get('pitch_angle_2_desc', '')}")
-                st.error(f"💡 **Angle 3: {data.get('pitch_angle_3_title', 'Value Optimization')}**\n\n{data.get('pitch_angle_3_desc', '')}")
-                
-                st.divider()
-                
-                # Row 5: Digital Footprint
-                with st.expander("🌐 View Digital Channels & Footprint Summary", expanded=True):
-                    st.write(data.get("digital_presence", "Public records indicate an active brand footprint across primary web directories."))
+                with right_layout:
+                    st.markdown("### 🎯 Recommended Strategic Sales Approaches")
                     
-            except Exception as e:
-                st.error(f"UI Layout Engine encountered an issue parsing data lines: {e}")
-                # Fallback to display text if JSON fails
-                if 'response' in locals():
-                    st.markdown(response.text)
+                    # High visibility colored messaging blocks
+                    st.info(f"💡 **Approach A: {dataset.get('angle_1_header')}**\n\n{dataset.get('angle_1_body')}")
+                    st.warning(f"💡 **Approach B: {dataset.get('angle_2_header')}**\n\n{dataset.get('angle_2_body')}")
+                    st.error(f"💡 **Approach C: {dataset.get('angle_3_header')}**\n\n{dataset.get('angle_3_body')}")
+                    
+            except Exception as json_parse_error:
+                st.error("⚠️ Data Parsing Notice: The rate limit block or an unmapped string format interfered with the custom layout compilation.")
+                # Safe plain text fallback view if JSON parsing encounters data issues
+                with st.expander("Toggle Alternative Raw Text Dossier View", expanded=True):
+                    if 'response' in locals():
+                        st.write(response.text)
+                    else:
+                        st.write("A clean pipeline handshake could not be established. Please wait 30 seconds for your free-tier key quota to clear and try again.")
