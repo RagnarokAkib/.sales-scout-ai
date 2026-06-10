@@ -63,7 +63,8 @@ if st.button("🚀 Execute Comprehensive Scan", use_container_width=True):
             context = get_stable_data(target_input, scan_linkedin, scan_facebook)
             
             genai.configure(api_key=ai_api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            # Using the corrected model path
+            model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
             
             prompt = f"""You are a professional sales researcher. Analyze this info for {target_input}: {context}.
             Return ONLY a valid JSON object with these keys: 
@@ -73,7 +74,9 @@ if st.button("🚀 Execute Comprehensive Scan", use_container_width=True):
             
             response = model.generate_content(prompt)
             try:
-                data = json.loads(response.text.replace("```json", "").replace("```", "").strip())
+                # Cleaning the response and loading JSON
+                raw_text = response.text.replace("```json", "").replace("```", "").strip()
+                data = json.loads(raw_text)
                 
                 # Visual Dashboard
                 col1, col2, col3 = st.columns([2, 1, 1])
@@ -96,6 +99,6 @@ if st.button("🚀 Execute Comprehensive Scan", use_container_width=True):
                 st.markdown("### 📡 Social Audit")
                 st.write(data.get("social_audit", ""))
                 
-            except:
-                st.error("Error formatting data. Raw Output:")
+            except Exception as e:
+                st.error("Error displaying data. AI Output:")
                 st.write(response.text)
